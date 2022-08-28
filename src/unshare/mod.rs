@@ -1,18 +1,17 @@
 use bitflags::bitflags;
 use nix::{errno, libc};
-use std::collections::HashSet;
 
 mod mappings;
 
 bitflags! {
   struct Namespaces: u32 {
-    const NET = libc::CLONE_NEWNET;
-    const PID = libc::CLONE_NEWPID;
-    const MOUNT = libc::CLONE_NEWNS;
-    const USER = libc::CLONE_NEWUSER;
-    const IPC = libc::CLONE_NEWIPC;
-    const CGROUP = libc::CLONE_NEWCGROUP;
-    const UTS = libc::CLONE_NEWUTS;
+    const NET = libc::CLONE_NEWNET as u32;
+    const PID = libc::CLONE_NEWPID as u32;
+    const MOUNT = libc::CLONE_NEWNS as u32;
+    const USER = libc::CLONE_NEWUSER as u32;
+    const IPC = libc::CLONE_NEWIPC as u32 ;
+    const CGROUP = libc::CLONE_NEWCGROUP as u32;
+    const UTS = libc::CLONE_NEWUTS as u32;
   }
 }
 
@@ -24,7 +23,7 @@ enum UnshareError {
 
 fn unshare(namespaces: Namespaces) -> Result<(), UnshareError> {
     unsafe {
-        let exit_code = libc::unshare(namespaces);
+        let exit_code = libc::unshare(namespaces.bits as i32);
         if exit_code == 0 {
             return Ok(());
         }
