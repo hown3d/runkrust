@@ -4,30 +4,19 @@ use std::{
     vec,
 };
 
-enum Namespace {
-    User,
-    Mount,
-    Cgroup,
-    IPC,
-    Time,
-    UTS,
-    PID,
-    Network,
-}
-
 #[derive(Debug, PartialEq)]
-struct Mapping {
+pub struct Mapping {
     container_id: u32,
     host_id: u32,
     range: u32,
 }
 
-fn get_uid_mappings() -> Vec<Mapping> {
+pub fn get_uid_mappings() -> Vec<Mapping> {
     let lines = read_lines("/etc/subuid");
     parse_mappings(&get_user_id(), lines)
 }
 
-fn get_gid_mappings() -> Vec<Mapping> {
+pub fn get_gid_mappings() -> Vec<Mapping> {
     let lines = read_lines("/etc/subgid");
     parse_mappings(&get_group_id(), lines)
 }
