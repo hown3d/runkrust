@@ -1,4 +1,3 @@
 oci-test:
-	cd runtime-tools; \
-	make runtimetest validation-executables \
-	sudo make RUNTIME=target/debug/runkrust localvalidation
+	docker build -f test/Dockerfile -t runkrust-oci-test .
+	docker run runkrust-oci-test
