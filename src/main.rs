@@ -1,6 +1,13 @@
-use std::{fmt::Display, path::PathBuf, process};
+use std::{
+    fmt::Display,
+    fs::canonicalize,
+    path::{self, Path, PathBuf},
+    process,
+};
 
 use clap::{CommandFactory, Parser, Subcommand, ValueEnum};
+use libocispec::runtime;
+use runkrust::container;
 
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
@@ -119,7 +126,16 @@ fn main() {
             bundle,
             pid_file,
             console_socket,
-        } => panic!("Called Create: {:?}", command),
+        } => {
+            let mut bundle_path = PathBuf::from(bundle);
+            if !bundle_path.is_absolute() {
+                bundle_path = absolutize_path(bundle_path);
+            }
+            let mut spec_file = bundle_path.clone();
+            spec_file.push("config.json");
+            let spec = runtime::Spec::load(spec_file.to_str().unwrap()).unwrap();
+            container::create(container_id, spec);
+        }
         Commands::Delete { container_id } => {
             panic!("Called Delete: {:?}", command)
         }
@@ -130,4 +146,8 @@ fn main() {
             panic!("Called State: {:?}", command)
         }
     }
+}
+
+fn absolutize_path(p: PathBuf) -> PathBuf {
+    return canonicalize(&p).unwrap();
 }

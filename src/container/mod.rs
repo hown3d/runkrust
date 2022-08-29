@@ -1,6 +1,8 @@
 use libocispec::runtime::{self, Spec};
 
-fn create(id: u32, spec: runtime::Spec) {}
+pub fn create(id: &str, spec: runtime::Spec) {
+    panic!("ContainerID: {}, hello", id)
+}
 
 fn start(spec: runtime::Spec) {}
 
