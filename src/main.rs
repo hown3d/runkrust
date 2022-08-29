@@ -71,20 +71,6 @@ enum Commands {
         /// path to an AF_UNIX socket which will receive a file descriptor referencing the master end of the console's pseudoterminal
         #[clap(long, action)]
         console_socket: Option<String>,
-
-        /// do not use pivot root to jail process inside rootfs.  
-        /// This should be used whenever the rootfs is on top of a ramdisk
-        #[clap(long, action)]
-        no_pivot: bool,
-
-        /// do not create a new session keyring for the container.
-        /// This will cause the container to inherit the calling processes session key
-        #[clap(long, action)]
-        no_new_keyring: bool,
-
-        /// Pass N additional file descriptors to the container (stdio + $LISTEN_FDS + N in total)
-        #[clap(long, action, default_value = "0")]
-        preserve_fds: u32,
     },
     /// executes the user defined process in a created container
     Start {
@@ -107,10 +93,6 @@ enum Commands {
     Delete {
         #[clap(value_parser)]
         container_id: String,
-
-        /// Forcibly deletes the container if it is still running
-        #[clap(long, short, action)]
-        force: bool,
     },
 }
 
@@ -137,14 +119,8 @@ fn main() {
             bundle,
             pid_file,
             console_socket,
-            no_pivot,
-            no_new_keyring,
-            preserve_fds,
         } => panic!("Called Create: {:?}", command),
-        Commands::Delete {
-            container_id,
-            force,
-        } => {
+        Commands::Delete { container_id } => {
             panic!("Called Delete: {:?}", command)
         }
         Commands::Start { container_id } => {
