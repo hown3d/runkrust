@@ -1,5 +1,5 @@
 #[cfg(target_os = "linux")]
-pub mod unshare;
+pub mod namespace;
 
 #[cfg(target_os = "linux")]
 pub mod container;

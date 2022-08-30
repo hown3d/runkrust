@@ -1,4 +1,5 @@
 use std::{
+    env::set_current_dir,
     fmt::Display,
     fs::canonicalize,
     path::{self, Path, PathBuf},
@@ -6,7 +7,6 @@ use std::{
 };
 
 use clap::{CommandFactory, Parser, Subcommand, ValueEnum};
-use libocispec::runtime;
 use runkrust::container;
 
 #[derive(Parser)]
@@ -133,7 +133,15 @@ fn main() {
             }
             let mut spec_file = bundle_path.clone();
             spec_file.push("config.json");
-            let spec = runtime::Spec::load(spec_file.to_str().unwrap()).unwrap();
+            let spec = match oci_spec::runtime::Spec::load(spec_file.to_str().unwrap()) {
+                Ok(spec) => spec,
+                Err(e) => match e {
+                    oci_spec::OciSpecError::Io(err) => panic!("Spec doesn't exist: {}", err),
+                    oci_spec::OciSpecError::SerDe(err) => panic!("Spec json is invalid: {}", err),
+                    _ => panic!("{:?}", e),
+                },
+            };
+            set_current_dir(bundle_path).unwrap();
             container::create(container_id, spec);
         }
         Commands::Delete { container_id } => {

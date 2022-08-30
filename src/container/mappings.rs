@@ -1,14 +1,66 @@
 use std::{
+    error::Error,
+    fmt::Display,
     fs::File,
-    io::{BufRead, BufReader, Lines},
+    io::{self, BufRead, BufReader, Lines},
+    process::Command,
     vec,
 };
+
+use nix::unistd::Pid;
+use oci_spec::runtime::LinuxIdMapping;
 
 #[derive(Debug, PartialEq)]
 pub struct Mapping {
     container_id: u32,
     host_id: u32,
     range: u32,
+}
+
+#[derive(Debug)]
+pub enum MappingError {
+    Apply(String),
+}
+
+impl Display for MappingError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            MappingError::Apply(s) => write!(f, "Apply mappings: {}", s),
+        }
+    }
+}
+
+impl Error for MappingError {}
+
+pub fn apply_id_mappings(
+    program: &str,
+    pid: Pid,
+    mappings: &Vec<LinuxIdMapping>,
+) -> Result<(), Box<dyn Error>> {
+    let newuidmap_args: Vec<String> = mappings
+        .iter()
+        .map(|mapping| {
+            format!(
+                "{} {} {}",
+                mapping.container_id(),
+                mapping.host_id(),
+                mapping.size()
+            )
+        })
+        .collect();
+
+    let output = Command::new(program)
+        .args([format!("{}", pid), newuidmap_args.join(" ")])
+        .output()?;
+
+    if !output.status.success() {
+        return Err(Box::new(MappingError::Apply(format!(
+            "{} did not exit successfully: {}",
+            program,
+            output.status.code().unwrap()
+        ))));
+    }
+    Ok(())
 }
 
 pub fn get_uid_mappings() -> Vec<Mapping> {
