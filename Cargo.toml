@@ -1,14 +1,6 @@
-[package]
-name = "runkrust"
-version = "0.1.0"
-edition = "2021"
+[workspace]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-oci-spec = { version = "0.5.7", features = ["proptests", "runtime"] }
-users = "0.11.0"
-pretty_assertions = "1.2.1"
-nix = "0.25.0"
-bitflags = "1.3.2"
-clap = { version = "3.2.17", features = ["derive"] }
+members = [
+    "firecracker-client",
+    "runkrust"
+]
